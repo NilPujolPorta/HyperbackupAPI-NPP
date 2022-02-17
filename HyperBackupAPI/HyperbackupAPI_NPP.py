@@ -1,22 +1,19 @@
+from __future__ import barry_as_FLUFL
 import json
-from lib2to3.pgen2.token import OP
 import time
-from datetime import datetime
-import datetime
 from os.path import exists
 import os
 
 from selenium import webdriver 
 from selenium.webdriver.chrome.options import Options
-import cv2 
+from selenium.webdriver.common.action_chains import ActionChains
 import pytesseract
 import argparse
 import mysql.connector
 import yaml
 import wget
-import keyboard
 
-__version__ ="0.0.1"
+__version__ ="0.1.0"
 
 def main(args=None):
 	ruta = os.path.dirname(os.path.abspath(__file__))
@@ -111,44 +108,88 @@ def main(args=None):
 
 	options = Options()
 	if args.graphicUI:
-		#options.headless = True
-		#options.add_argument('--headless')
-		#options.add_argument('--disable-gpu')
-		options.add_argument('window-size=1200x600')
+		options.headless = True
+		options.add_argument('--headless')
+		options.add_argument('--disable-gpu')
+		options.add_argument('window-size=1720x980')
 	browser = webdriver.Chrome(executable_path= ruta+"/chromedriver.exe", options = options)
 	browser.get(url)
 	time.sleep(3)
-	find_login = browser.find_elements_by_class_name("v-btn")
+	find_login = browser.find_elements(by="class name", value="v-btn")
 	for boto in find_login:
-		print(boto)
 		boto.click()
+		break
 	time.sleep(10)
-	#find_user = browser.find_element(by='name', value="email")	#ERROR
-	#find_user.send_keys(resultatbd[0][0])						#ERROR
-	keyboard.write(resultatbd[0][0])
-	find_login = browser.find_elements_by_class_name("btn-primary")
+	actions = ActionChains(browser)
+	actions.send_keys(resultatbd[0][0])
+	actions.perform()
+
+	find_login = browser.find_elements(by="class name", value="btn-primary")
 	for boto in find_login:
-		print(boto)
 		boto.click()
+		break
 	time.sleep(10)
-	#find_passwd = browser.find_element(by='name', value="password")
-	#find_passwd.send_keys(resultatbd[0][1])
-	keyboard.write(resultatbd[0][1])
-	find_login = browser.find_elements_by_class_name("btn-primary")
+	actions = ActionChains(browser)
+	actions.send_keys(resultatbd[0][1])
+	actions.perform()
+	
+	find_login = browser.find_elements(by="class name", value="btn-primary")
 	for boto in find_login:
-		print(boto)
 		boto.click()
+		break
 	time.sleep(10)
 
-	find_login = browser.find_elements_by_class_name("NavigatorItem_level2_1Np-l")
+	find_login = browser.find_elements(by="class name", value="NavigatorItem_level2_1Np-l")
 	for boto in find_login:
 		boto.click()
+		break
 	time.sleep(10)
 
 
 	################################--EXCTRACCIÓ DE DADES--##############################
 
+	statusTots = browser.find_elements(by="class name", value='Card_statusCount_O6wZ9')
+	arrayStatus = []
+	for estatus in statusTots:
+		pare = estatus.find_element(by="xpath", value='..')
+		if  estatus.get_attribute("class") == pare.get_attribute('class'):
+			time.sleep(0)
+		else:
+			arrayStatus.append(estatus.text)
 	
+	arrayNom = []
+	nomTots = browser.find_elements(by="class name", value='Card_host_3CH4Z')
+	for nom in nomTots:
+		arrayNom.append(nom.text)
+
+
+	arrayUs = []
+	x= 1
+	while x <= len(arrayNom):
+		arrayUs.append(browser.find_elements(by="xpath", value='//*[@id="app"]/div[2]/div[2]/div[2]/div/div[3]/div['+str(x)+']/div/div[2]/div/div[2]/div/div[3]/p[2]/a')[0].text)
+		x += 1
+
+	arrayCopia = []
+	expandir = browser.find_elements(by="class name", value="CollapseButton_root_2be8O")
+	for fletxa in expandir:
+		fletxa.click()
+		time.sleep(1)
+		copia=browser.find_elements(by="class name", value="content-cell")[4]
+		arrayCopia.append(copia.text)
+		fletxa.click()
+
+	
+
+
+
+	i = 0
+	while i < len(arrayNom):
+		print(arrayNom[i]+" |  Us "+arrayUs[i] + "  | Ultima copia "+ arrayCopia[i])
+		print("Correctes: " + arrayStatus[i].split("\n")[0])
+		print("Erronis: " + arrayStatus[i].split("\n")[1])
+		print("Warnings: " + arrayStatus[i].split("\n")[2])
+		print()
+		i += 1
 
 if __name__ =='__main__':
     main()
