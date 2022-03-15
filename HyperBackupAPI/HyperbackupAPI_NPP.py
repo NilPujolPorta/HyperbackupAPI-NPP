@@ -181,7 +181,7 @@ def main(args=None):
 	
 
 
-
+    ################################--MOSTRA DE DADES--#########################
 	i = 0
 	while i < len(arrayNom):
 		print(arrayNom[i]+" |  Us "+arrayUs[i] + "  | Ultima copia "+ arrayCopia[i])
